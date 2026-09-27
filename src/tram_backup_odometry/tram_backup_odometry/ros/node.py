@@ -22,7 +22,12 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import NavSatFix, NavSatStatus
-from tram_vehicle_msgs.msg import DriverControllerCommand, VelocitySensor
+from tram_vehicle_msgs.msg import VelocitySensor
+
+try:
+    from tram_vehicle_msgs.msg import DriverControllerCommand
+except ImportError:  # пакет сообщений собран без типа ручки: узел считает по тележкам, а не падает
+    DriverControllerCommand = None
 
 from tram_backup_odometry import model_file
 from tram_backup_odometry.app import Output, PoseSettings, TramOdometry
@@ -74,7 +79,11 @@ class OdometryNode(Node):
 
         self.create_subscription(VelocitySensor, FRONT_TOPIC, lambda m: self._on_wheel("front", m), INPUT_QOS)
         self.create_subscription(VelocitySensor, REAR_TOPIC, lambda m: self._on_wheel("rear", m), INPUT_QOS)
-        self.create_subscription(DriverControllerCommand, HANDLE_TOPIC, self._on_handle, INPUT_QOS)
+        if DriverControllerCommand is None:
+            self.get_logger().error("в пакете tram_vehicle_msgs нет типа DriverControllerCommand: ручка не читается, "
+                                    "скорость считается только по тележкам, точность хуже")
+        else:
+            self.create_subscription(DriverControllerCommand, HANDLE_TOPIC, self._on_handle, INPUT_QOS)
         fix_topic = self._param("start_fix_topic")
         self._fix_sub = self.create_subscription(NavSatFix, fix_topic, self._on_fix, INPUT_QOS)
 
