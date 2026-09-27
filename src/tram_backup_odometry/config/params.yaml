@@ -1,0 +1,23 @@
+# Параметры узла tram_backup_odometry. Числа модели (уравнение, фильтр, проверка колёс, карта) — в model.json.
+tram_backup_odometry:
+  ros__parameters:
+    vehicle: "30618"                   # номер вагона: 30618 или 30639 (свои числа уравнения и масштаб колёс)
+    publish_rate_hz: 50.0              # частота /result/velocity и /result/position
+    wheel_reading_delay_s: 0.0         # показание колёс относится к моменту на столько позже своей метки; 0 —
+                                       # на наших 68 рейсах датчик не отстаёт (experiments/23, docs/ACCURACY.md)
+    mgrs_grid: "37UCB"                 # квадрат MGRS выхода; восточная часть маршрута — x > 100 000
+    map_frame: "map"                   # frame_id положения после выставки по GNSS
+    odom_frame: "odom"                 # frame_id положения без выставки (путь от старта по x)
+    base_frame: "base_link"            # child_frame_id и frame_id скорости
+    start_fix_topic: "/sensing/gnss/master/fix"   # GNSS только для выставки на старте
+    start_fix_collect_s: 2.0           # сколько секунд уточнять место старта медианой фиксов
+    start_fix_wait_s: 3.0              # нет годного фикса столько секунд — путь от старта без карты
+    base_link_ahead_of_antenna_m: 9.873  # base_link впереди антенны master по ходу, м (tf антенны master в base_link: x = −9,873)
+    base_link_below_antenna_m: 3.0       # base_link (касание колеса и рельса) ниже антенны master, м (tf: z = 3,0)
+    position_sigma_at_start_m: 2.0     # σ положения вдоль пути на старте, м
+    position_sigma_per_metre: 0.003    # рост σ вдоль пути на метр пути (дрейф на проверке: медиана 0,21 %)
+    position_sigma_across_m: 1.0       # σ поперёк пути, м
+    position_sigma_vertical_m: 2.0     # σ высоты, м
+    diagnostics_rate_hz: 1.0           # частота /diagnostics
+    log_period_s: 10.0                 # как часто писать строку состояния в журнал
+    model_file: ""                     # файл чисел модели; пусто — config/model.json из пакета
